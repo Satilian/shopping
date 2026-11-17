@@ -2,6 +2,7 @@ image:
   repository: ""
   tag: ""
 imagePullSecret: ghcr-pull-secret
+sharedListsSecret: ""
 ingress:
   className: traefik
   host: shopping.root.sx

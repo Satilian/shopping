@@ -50,6 +50,7 @@ jobs:
           IMAGE: ${{ needs.build.outputs.image }}
           TAG: ${{ needs.build.outputs.tag }}
           CLUSTER_ISSUER: ${{ vars.CLUSTER_ISSUER }}
+          SHARED_LISTS_SECRET: ${{ vars.SHARED_LISTS_SECRET }}
         run: |
           umask 077
           export KUBECONFIG="$RUNNER_TEMP/kubeconfig"
@@ -61,4 +62,5 @@ jobs:
           helm upgrade --install shopping-list ./helm --namespace shopping-list \
             --wait --timeout 300s --rollback-on-failure \
             --set-string image.repository="$IMAGE" --set-string image.tag="$TAG" \
-            --set-string ingress.clusterIssuer="$CLUSTER_ISSUER"
+            --set-string ingress.clusterIssuer="$CLUSTER_ISSUER" \
+            --set-string sharedListsSecret="$SHARED_LISTS_SECRET"

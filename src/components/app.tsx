@@ -1,9 +1,9 @@
 import { RouterProvider } from '@satilian/router';
-import { ShoppingList } from './shopping-list';
+import { AccountShoppingList } from './account-shopping-list';
 
 const routes = [
-  { id: 'catalog', path: '/', element: <ShoppingList /> },
-  { id: 'shopping', path: '/shopping', element: <ShoppingList shoppingOnly /> },
+  { id: 'catalog', path: '/', element: <AccountShoppingList /> },
+  { id: 'shopping', path: '/shopping', element: <AccountShoppingList shoppingOnly /> },
 ];
 
 export default function App({ pathname }: { pathname?: string }) {

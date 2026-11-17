@@ -17,6 +17,11 @@ spec:
       containers:
         - name: shopping-list
           image: "{{ required "image.repository is required" .Values.image.repository }}:{{ required "image.tag is required" .Values.image.tag }}"
+          {{- with .Values.sharedListsSecret }}
+          envFrom:
+            - secretRef:
+                name: {{ . | quote }}
+          {{- end }}
           ports:
             - name: http
               containerPort: 3000

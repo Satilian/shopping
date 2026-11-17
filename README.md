@@ -32,3 +32,12 @@ Workflow **Build and deploy PWA** запускается вручную. Он с
 - Variable — опционально `CLUSTER_ISSUER`.
 - Secrets — `KUBECONFIG`, `GHCR_USERNAME`, `GHCR_PAT`.
 - Kubernetes API должен быть доступен из runner. Для TLS нужен либо настроенный ClusterIssuer, либо secret `shopping-list-tls` в namespace `shopping-list`. DNS домена должен указывать на ingress.
+
+## Общие списки
+
+1. Примените `migrations/001_shared_lists.sql` к базе PostgreSQL через `psql -v ON_ERROR_STOP=1 -f migrations/001_shared_lists.sql`, передав параметры подключения выбранным способом.
+2. Создайте конфиденциальный OIDC-клиент в Keycloak с Authorization Code Flow и PKCE S256. Зарегистрируйте точный redirect URI `https://shopping.root.sx/api/auth/callback`.
+3. Создайте Kubernetes Secret в namespace `shopping-list` с ключами `DATABASE_URL`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` и `PUBLIC_URL`. Для боевого адреса используйте `PUBLIC_URL=https://shopping.root.sx`. `OIDC_ISSUER` — HTTPS URL realm, доступный браузеру и серверу.
+4. Укажите имя этого секрета в переменной GitHub Actions `SHARED_LISTS_SECRET` и запустите workflow.
+
+При локальном запуске эти же параметры можно передать как переменные окружения. Без `OIDC_ISSUER` приложение запускается в локальном режиме.

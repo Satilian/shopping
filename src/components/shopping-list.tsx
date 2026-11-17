@@ -15,7 +15,7 @@ interface Group {
   items: Item[];
 }
 
-const storageKey = 'shopping-list:v1';
+export const storageKey = 'shopping-list:v1';
 const empty: Group[] = [];
 const listeners = new Set<() => void>();
 let snapshot = empty;
@@ -51,13 +51,15 @@ function updateGroup(id: string, change: (group: Group) => Group) {
   update((groups) => groups.map((group) => (group.id === id ? change(group) : group)));
 }
 
-function AddForm({ label, onAdd }: { label: string; onAdd: (name: string) => void }) {
-  function submit(event: FormEvent<HTMLFormElement>) {
+export function AddForm({ label, onAdd }: { label: string; onAdd: (name: string) => void | Promise<boolean> }) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const name = String(new FormData(event.currentTarget).get('name') ?? '').trim();
+    const form = event.currentTarget;
+    const name = String(new FormData(form).get('name') ?? '').trim();
     if (!name) return;
-    onAdd(name);
-    event.currentTarget.reset();
+    if ((await onAdd(name)) !== false && new FormData(form).get('name')?.toString().trim() === name) {
+      form.reset();
+    }
   }
 
   return (
