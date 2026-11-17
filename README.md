@@ -12,7 +12,16 @@ npm run build
 npm start
 ```
 
-Откройте http://localhost:3000. `npm run dev` запускает фронтенд с HMR на порту 5173. Для проверки установки и офлайн-режима используйте собранную PWA на порту 3000.
+Откройте http://localhost:3000. Для запуска общих списков локально скопируйте шаблон и заполните параметры:
+
+```powershell
+Copy-Item .env.example .env
+npm run dev
+```
+
+`npm run dev` собирает приложение и запускает NestJS с переменными из `.env`. Открывайте адрес из `PUBLIC_URL` для работы с API и входа. `npm run dev:web` запускает только фронтенд с HMR на порту 5173.
+
+В шаблоне указаны NodePort Keycloak и PostgreSQL. Подставьте имя realm, ID и секрет конфиденциального OIDC-клиента, пользователя, пароль и имя базы. Спецсимволы в логине и пароле PostgreSQL закодируйте для URL. В Keycloak зарегистрируйте точный redirect URI `http://localhost:3000/api/auth/callback`. Значение `OIDC_ISSUER` должно совпадать с полем `issuer` в discovery-документе realm. Параметр `OIDC_ALLOW_INSECURE_HTTP` разрешает HTTP-соединение с Keycloak для локального запуска. Для Keycloak по HTTPS удалите его или задайте `false`.
 
 ## Android
 
@@ -39,5 +48,13 @@ Workflow **Build and deploy PWA** запускается вручную. Он с
 2. Создайте конфиденциальный OIDC-клиент в Keycloak с Authorization Code Flow и PKCE S256. Зарегистрируйте точный redirect URI `https://shopping.root.sx/api/auth/callback`.
 3. Создайте Kubernetes Secret в namespace `shopping-list` с ключами `DATABASE_URL`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` и `PUBLIC_URL`. Для боевого адреса используйте `PUBLIC_URL=https://shopping.root.sx`. `OIDC_ISSUER` — HTTPS URL realm, доступный браузеру и серверу.
 4. Укажите имя этого секрета в переменной GitHub Actions `SHARED_LISTS_SECRET` и запустите workflow.
+
+Если Keycloak использует частный CA или самоподписанный сертификат, задайте в локальном `.env` путь к доверенному PEM-файлу:
+
+```dotenv
+OIDC_CA_FILE="C:/certs/keycloak.crt"
+```
+
+`npm run dev` передаёт переменную серверному процессу при запуске Node.js. Сертификат должен соответствовать имени хоста или IP из HTTPS issuer.
 
 При локальном запуске эти же параметры можно передать как переменные окружения. Без `OIDC_ISSUER` приложение запускается в локальном режиме.

@@ -6,7 +6,8 @@
     "node": ">=24"
   },
   "scripts": {
-    "dev": "rsbuild dev --environment web",
+    "dev": "npm run build && node --env-file=.env scripts/start-dev.mjs",
+    "dev:web": "rsbuild dev --environment web",
     "start": "node dist/server/main.js",
     "build": "rsbuild build && node scripts/build-pwa.mjs && tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",

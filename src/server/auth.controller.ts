@@ -46,7 +46,18 @@ export class AuthService {
     if (!OIDC_ISSUER || !OIDC_CLIENT_ID || !OIDC_CLIENT_SECRET) {
       throw new ServiceUnavailableException('OIDC is not configured');
     }
-    this.client ??= await oidc.discovery(new URL(OIDC_ISSUER), OIDC_CLIENT_ID, OIDC_CLIENT_SECRET);
+    const issuer = new URL(OIDC_ISSUER);
+    const allowHttp =
+      issuer.protocol === 'http:' &&
+      process.env.NODE_ENV !== 'production' &&
+      process.env.OIDC_ALLOW_INSECURE_HTTP === 'true';
+    this.client ??= await oidc.discovery(
+      issuer,
+      OIDC_CLIENT_ID,
+      OIDC_CLIENT_SECRET,
+      undefined,
+      allowHttp ? { execute: [oidc.allowInsecureRequests] } : undefined,
+    );
     return this.client;
   }
 
@@ -111,7 +122,7 @@ export class AuthController {
     reply
       .header('Cache-Control', 'no-store')
       .header('Set-Cookie', this.auth.setCookie(flowCookie, `${state}.${verifier}`, 600))
-      .redirect(url.href);
+      .redirect(url.href, 302);
   }
 
   @Get('callback')
@@ -130,7 +141,7 @@ export class AuthController {
     const claims = tokens.claims();
     if (!claims) throw new UnauthorizedException('Missing identity token');
     const token = await this.auth.createSession(claims);
-    reply.header('Set-Cookie', this.auth.setCookie(sessionCookie, token, sessionAge)).redirect('/');
+    reply.header('Set-Cookie', this.auth.setCookie(sessionCookie, token, sessionAge)).redirect('/', 302);
   }
 
   @Get('session')
