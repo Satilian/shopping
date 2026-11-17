@@ -1,0 +1,64 @@
+name: Build and deploy PWA
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shopping-list-production
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.image.outputs.name }}
+      tag: ${{ steps.image.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+      - id: image
+        run: |
+          echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+          echo "tag=sha-$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+      - name: Publish image
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+          IMAGE: ${{ steps.image.outputs.name }}:${{ steps.image.outputs.tag }}
+        run: |
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v6
+      - uses: azure/setup-kubectl@v4
+      - uses: azure/setup-helm@v5
+      - name: Deploy to K3s
+        env:
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          IMAGE: ${{ needs.build.outputs.image }}
+          TAG: ${{ needs.build.outputs.tag }}
+          CLUSTER_ISSUER: ${{ vars.CLUSTER_ISSUER }}
+        run: |
+          umask 077
+          export KUBECONFIG="$RUNNER_TEMP/kubeconfig"
+          printf '%s' "$KUBECONFIG_CONTENT" > "$KUBECONFIG"
+          kubectl create namespace shopping-list --dry-run=client -o yaml | kubectl apply -f -
+          kubectl -n shopping-list create secret docker-registry ghcr-pull-secret \
+            --docker-server=ghcr.io --docker-username="$GHCR_USERNAME" --docker-password="$GHCR_PAT" \
+            --dry-run=client -o yaml | kubectl apply -f -
+          helm upgrade --install shopping-list ./helm --namespace shopping-list \
+            --wait --timeout 300s --rollback-on-failure \
+            --set-string image.repository="$IMAGE" --set-string image.tag="$TAG" \
+            --set-string ingress.clusterIssuer="$CLUSTER_ISSUER"

@@ -1,0 +1,9 @@
+image:
+  repository: ""
+  tag: ""
+imagePullSecret: ghcr-pull-secret
+ingress:
+  className: traefik
+  host: shopping.root.sx
+  tlsSecret: shopping-list-tls
+  clusterIssuer: ""
