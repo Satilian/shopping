@@ -36,11 +36,11 @@ adb shell am start -a android.intent.action.VIEW -d http://localhost:3000 -p com
 
 ## Деплой
 
-Workflow **Build and deploy PWA** запускается вручную. Он собирает и публикует образ в GHCR и разворачивает Helm-релиз в K3s на `shopping.root.sx`.
+Workflow **Build and deploy PWA** запускается при пуше в `main` и доступен для ручного запуска. Он собирает и публикует образ в GHCR и разворачивает Helm-релиз в K3s на `shopping.root.sx`.
 
 - Variables — `GHCR_USERNAME`, опционально `CLUSTER_ISSUER`.
 - Secrets — `KUBECONFIG`, `GHCR_PAT`.
-- Kubernetes API должен быть доступен из runner. Для TLS нужен либо настроенный ClusterIssuer, либо secret `shopping-list-tls` в namespace `shopping-list`. DNS домена должен указывать на ingress.
+- Kubernetes API должен быть доступен из runner. По умолчанию TLS выдаёт Traefik через ACME resolver `myresolver`. Для cert-manager задайте `CLUSTER_ISSUER`, для готового TLS Secret задайте `ingress.tlsSecret` в Helm. DNS домена должен указывать на ingress. HTTP перенаправляется на HTTPS через Traefik Middleware.
 
 ## Общие списки
 

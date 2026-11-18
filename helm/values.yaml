@@ -7,5 +7,6 @@ keycloakCaConfigMap: shopping-keycloak-ca
 ingress:
   className: traefik
   host: shopping.root.sx
-  tlsSecret: shopping-list-tls
+  tlsSecret: ""
+  certResolver: myresolver
   clusterIssuer: ""
