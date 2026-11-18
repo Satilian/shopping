@@ -45,7 +45,7 @@ jobs:
       - name: Deploy to K3s
         env:
           KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG }}
-          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_USERNAME: ${{ vars.GHCR_USERNAME }}
           GHCR_PAT: ${{ secrets.GHCR_PAT }}
           IMAGE: ${{ needs.build.outputs.image }}
           TAG: ${{ needs.build.outputs.tag }}

@@ -38,8 +38,8 @@ adb shell am start -a android.intent.action.VIEW -d http://localhost:3000 -p com
 
 Workflow **Build and deploy PWA** запускается вручную. Он собирает и публикует образ в GHCR и разворачивает Helm-релиз в K3s на `shopping.root.sx`.
 
-- Variable — опционально `CLUSTER_ISSUER`.
-- Secrets — `KUBECONFIG`, `GHCR_USERNAME`, `GHCR_PAT`.
+- Variables — `GHCR_USERNAME`, опционально `CLUSTER_ISSUER`.
+- Secrets — `KUBECONFIG`, `GHCR_PAT`.
 - Kubernetes API должен быть доступен из runner. Для TLS нужен либо настроенный ClusterIssuer, либо secret `shopping-list-tls` в namespace `shopping-list`. DNS домена должен указывать на ingress.
 
 ## Общие списки
