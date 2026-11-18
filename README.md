@@ -46,7 +46,7 @@ Workflow **Build and deploy PWA** запускается при пуше в `mai
 
 1. Примените `migrations/001_shared_lists.sql` к базе PostgreSQL через `psql -v ON_ERROR_STOP=1 -f migrations/001_shared_lists.sql`, передав параметры подключения выбранным способом.
 2. Создайте конфиденциальный OIDC-клиент в Keycloak с Authorization Code Flow и PKCE S256. Зарегистрируйте точный redirect URI `https://shopping.root.sx/api/auth/callback`.
-3. Создайте Kubernetes Secret в namespace `shopping-list` с ключами `DATABASE_URL`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` и `PUBLIC_URL`. Для боевого адреса используйте `PUBLIC_URL=https://shopping.root.sx`. `OIDC_ISSUER` — HTTPS URL realm, доступный браузеру и серверу.
+3. Создайте Kubernetes Secret в namespace `shopping-list` с ключами `DATABASE_URL`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` и `PUBLIC_URL`. Для боевого адреса используйте `PUBLIC_URL=https://shopping.root.sx` и `OIDC_ISSUER=https://webmax.root.sx:30081/realms/YOUR_REALM`. Домен Keycloak должен разрешаться и быть доступен по HTTPS из браузера и пода приложения.
 4. Укажите имя этого секрета в переменной GitHub Actions `SHARED_LISTS_SECRET` и запустите workflow.
 
 Если Keycloak использует частный CA или самоподписанный сертификат, задайте в локальном `.env` путь к доверенному PEM-файлу:
